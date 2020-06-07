@@ -13,7 +13,10 @@
     "prefer-stable": true,
     "require": {
         "php": "^7.4.0",
+        "ext-json": "*",
         "klipper/api-bundle": "^2.0.0",
+        "symfony/dom-crawler": "^5.1.0",
+        "symfony/http-client": "^5.1.0",
         "symfony/framework-bundle": "^5.1.0"
     },
     "autoload": {
