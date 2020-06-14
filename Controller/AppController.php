@@ -110,6 +110,7 @@ class AppController
         $data = json_decode(file_get_contents($remoteConfigPath), true, 512, JSON_THROW_ON_ERROR);
         $baseUrl = $data['assetBaseUrl'];
         $baseAsset = trim($this->assetsPath, '/').'/';
+        $baseAssetLength = \strlen($baseAsset);
         $isIndexContent = false;
 
         if (\in_array($path, ['', '/'], true) || 0 === strpos($path, 'index.html')) {
@@ -117,12 +118,17 @@ class AppController
             $isIndexContent = true;
         }
 
+        if (0 === strpos($path, 'fonts/')) {
+            $baseAsset = 'fonts/';
+            $baseAssetLength = 0;
+        }
+
         if (0 === strpos($path, $baseAsset)) {
             $client = HttpClient::create([
                 'verify_host' => false,
                 'verify_peer' => false,
             ]);
-            $url = $baseUrl.'/'.substr($path, \strlen($baseAsset));
+            $url = $baseUrl.'/'.substr($path, $baseAssetLength);
             $response = $client->request('GET', $url);
             $code = $response->getStatusCode();
 
