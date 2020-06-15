@@ -112,9 +112,10 @@ class AppController
         $baseAsset = trim($this->assetsPath, '/').'/';
         $baseAssetLength = \strlen($baseAsset);
         $isIndexContent = false;
+        $indexPath = $baseAsset.'index.html';
 
         if (\in_array($path, ['', '/'], true) || 0 === strpos($path, 'index.html')) {
-            $path = $baseAsset.'index.html';
+            $path = $indexPath;
             $isIndexContent = true;
         }
 
@@ -157,6 +158,10 @@ class AppController
             }
 
             throw new HttpException($code, $response->getContent());
+        }
+
+        if ($indexPath !== $path) {
+            return $this->streamAsset($indexPath, $remoteConfigPath);
         }
 
         throw new NotFoundHttpException();
