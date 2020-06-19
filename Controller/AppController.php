@@ -12,8 +12,10 @@
 namespace Klipper\Bundle\BowBundle\Controller;
 
 use Klipper\Bundle\BowBundle\Exception\RuntimeException;
+use Symfony\Bundle\SecurityBundle\Security\FirewallMap;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -25,14 +27,27 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class AppController
 {
+    private FirewallMap $firewallMap;
+
     private string $publicPath;
 
     private string $assetsPath;
 
-    public function __construct(string $publicPath, string $assetsPath = '/assets')
-    {
+    /**
+     * @var string[]
+     */
+    private array $excludedFirewalls;
+
+    public function __construct(
+        FirewallMap $firewallMap,
+        string $publicPath,
+        string $assetsPath = '/assets',
+        array $excludedFirewalls = []
+    ) {
+        $this->firewallMap = $firewallMap;
         $this->publicPath = $publicPath;
         $this->assetsPath = $assetsPath;
+        $this->excludedFirewalls = $excludedFirewalls;
     }
 
     /**
@@ -49,8 +64,14 @@ class AppController
      *
      * @throws
      */
-    public function index(string $path): Response
+    public function index(Request $request, string $path): Response
     {
+        $firewallConfig = $this->firewallMap->getFirewallConfig($request);
+
+        if (null !== $firewallConfig && \in_array($firewallConfig->getName(), $this->excludedFirewalls, true)) {
+            throw new NotFoundHttpException(Response::$statusTexts[Response::HTTP_NOT_FOUND]);
+        }
+
         $remoteConfigPath = $this->publicPath.$this->assetsPath.'/remote-assets-config.json';
         $indexPath = $this->publicPath.$this->assetsPath.'/index.html';
 

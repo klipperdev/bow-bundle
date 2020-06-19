@@ -9,7 +9,13 @@
         <service id="Klipper\Bundle\BowBundle\Controller\AppController"
                  public="true">
             <tag name="controller.service_arguments" />
+            <argument type="service" id="security.firewall.map" />
             <argument>%kernel.project_dir%/public</argument>
+            <argument>/assets</argument>
+            <argument type="collection">
+                <argument>api</argument>
+                <argument>oauth</argument>
+            </argument>
         </service>
     </services>
 </container>
