@@ -67,6 +67,10 @@ class AppController
      */
     public function index(Request $request, DownloaderInterface $downloader, string $path): Response
     {
+        if (\in_array($path, ['manifest.json', 'service-worker.js'], true)) {
+            $path = $this->assetsPath.'/'.$path;
+        }
+
         $firewallConfig = $this->firewallMap->getFirewallConfig($request);
 
         if (null !== $firewallConfig && \in_array($firewallConfig->getName(), $this->excludedFirewalls, true)) {
@@ -100,6 +104,12 @@ class AppController
         foreach ($crawler as $domElement) {
             $content .= $domElement->ownerDocument->saveHTML($domElement);
         }
+
+        $content = str_replace(
+            'href="'.$this->assetsPath.'/manifest.json"',
+            'href="/manifest.json"',
+            $content
+        );
 
         return str_replace(
             'href="favicon.ico"',
