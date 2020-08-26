@@ -12,6 +12,7 @@
 namespace Klipper\Bundle\BowBundle\Controller;
 
 use Klipper\Bundle\BowBundle\Exception\RuntimeException;
+use Klipper\Component\Content\Downloader\DownloaderInterface;
 use Symfony\Bundle\SecurityBundle\Security\FirewallMap;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\HttpClient;
@@ -64,7 +65,7 @@ class AppController
      *
      * @throws
      */
-    public function index(Request $request, string $path): Response
+    public function index(Request $request, DownloaderInterface $downloader, string $path): Response
     {
         $firewallConfig = $this->firewallMap->getFirewallConfig($request);
 
@@ -81,6 +82,10 @@ class AppController
 
         if (!file_exists($indexPath)) {
             throw new RuntimeException('To launch the application, assets must be compiled or served with the dev server for the development');
+        }
+
+        if (!$this->isIndex($path) && file_exists($this->publicPath.$path)) {
+            return $downloader->download($this->publicPath.$path);
         }
 
         return new Response($this->getIndexContent(file_get_contents($indexPath)));
@@ -135,7 +140,7 @@ class AppController
         $isIndexContent = false;
         $indexPath = $baseAsset.'index.html';
 
-        if (\in_array($path, ['', '/'], true) || 0 === strpos($path, 'index.html')) {
+        if ($this->isIndex($path)) {
             $path = $indexPath;
             $isIndexContent = true;
         }
@@ -186,5 +191,10 @@ class AppController
         }
 
         throw new NotFoundHttpException();
+    }
+
+    private function isIndex(string $path): bool
+    {
+        return \in_array($path, ['', '/'], true) || 0 === strpos($path, 'index.html');
     }
 }
