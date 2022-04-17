@@ -67,7 +67,7 @@ class AppController
      */
     public function index(Request $request, DownloaderInterface $downloader, string $path): Response
     {
-        if (\in_array($path, ['manifest.json', 'service-worker.js'], true)) {
+        if (\in_array($path, ['manifest.json', 'service-worker.js'], true) || false !== strpos($path, 'workbox-')) {
             $path = $this->assetsPath.'/'.$path;
         }
 
