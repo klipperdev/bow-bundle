@@ -88,8 +88,14 @@ class AppController
             throw new RuntimeException('To launch the application, assets must be compiled or served with the dev server for the development');
         }
 
-        if (!$this->isIndex($path) && file_exists($this->publicPath.$path)) {
-            return $downloader->download($this->publicPath.$path);
+        if (!$this->isIndex($path)) {
+            if (file_exists($this->publicPath.$path)) {
+                return $downloader->download($this->publicPath.$path);
+            }
+
+            if (str_starts_with('/'.$path, $this->assetsPath.'/')) {
+                throw new NotFoundHttpException(Response::$statusTexts[Response::HTTP_NOT_FOUND]);
+            }
         }
 
         return new Response($this->getIndexContent(file_get_contents($indexPath)));
